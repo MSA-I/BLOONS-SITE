@@ -4,16 +4,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: '#D4AF6A',
-        cream: '#F5ECD7',
-        rose: '#E8B4A0',
-        dark: '#2C1810',
+        gold: '#C9A96E',
+        cream: '#F5EDD6',
+        rose: '#E8A598',
+        dark: '#1A0A00',
         'bg-light': '#FFFDF9',
         'bg-cream': '#FAF6F0',
       },
       fontFamily: {
         heebo: ['Heebo', 'sans-serif'],
-        playfair: ['Playfair Display', 'serif'],
+        'frank-ruhl': ['"Frank Ruhl Libre"', 'serif'],
       },
       animation: {
         'shimmer': 'shimmer 4s ease-in-out infinite',
@@ -36,8 +36,8 @@ export default {
         'spring': 'cubic-bezier(0.23, 1, 0.32, 1)',
       },
       boxShadow: {
-        'gold': '0 4px 20px rgba(212, 175, 106, 0.25)',
-        'gold-lg': '0 8px 40px rgba(212, 175, 106, 0.35)',
+        'gold': '0 4px 20px rgba(201, 169, 110, 0.25)',
+        'gold-lg': '0 8px 40px rgba(201, 169, 110, 0.35)',
       },
     },
   },

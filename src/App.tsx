@@ -9,6 +9,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 // Components
 import Navbar from './components/shared/Navbar'
 import Hero from './components/Hero/Hero'
+import Gallery from './components/Gallery/Gallery'
 import Services from './components/Services/Services'
 import About from './components/About/About'
 import Testimonials from './components/Testimonials/Testimonials'
@@ -37,16 +38,17 @@ function App() {
     // Sync Lenis with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
 
-    gsap.ticker.add((time) => {
+    const rafCallback = (time: number) => {
       lenis.raf(time * 1000)
-    })
+    }
 
+    gsap.ticker.add(rafCallback)
     gsap.ticker.lagSmoothing(0)
 
     // Cleanup
     return () => {
       lenis.destroy()
-      gsap.ticker.remove(lenis.raf)
+      gsap.ticker.remove(rafCallback)
     }
   }, [])
 
@@ -59,6 +61,9 @@ function App() {
       <main>
         {/* Hero Section - Full viewport intro */}
         <Hero />
+
+        {/* Gallery Section - Our work showcase */}
+        <Gallery />
 
         {/* Services Section - What we offer */}
         <Services />
@@ -79,7 +84,7 @@ function App() {
       {/* Floating CTA Button (Mobile) */}
       <a
         href="tel:0504127772"
-        className="fixed bottom-6 left-6 z-50 md:hidden bg-[#D4AF6A] text-[#2C1810] p-4 rounded-full shadow-lg shadow-[#D4AF6A]/30 hover:shadow-xl transition-all duration-300 animate-pulse"
+        className="fixed bottom-6 left-6 z-50 md:hidden bg-[#C9A96E] text-[#1A0A00] p-4 rounded-full shadow-lg shadow-[#C9A96E]/30 hover:shadow-xl transition-all duration-300 animate-pulse"
         aria-label="התקשרו עכשיו"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

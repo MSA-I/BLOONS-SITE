@@ -1,8 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Playfair+Display:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;500;700&family=Heebo:wght@300;400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CSS Variables for brand colors */
+:root {
+  --color-gold: #C9A96E;
+  --color-cream: #F5EDD6;
+  --color-rose: #E8A598;
+  --color-dark: #1A0A00;
+  --color-bg-light: #FFFDF9;
+  --color-bg-cream: #FAF6F0;
+}
 
 /* RTL Direction */
 html {
@@ -12,8 +22,8 @@ html {
 /* Base styles */
 body {
   font-family: 'Heebo', sans-serif;
-  background-color: #FFFDF9;
-  color: #2C1810;
+  background-color: var(--color-bg-light);
+  color: var(--color-dark);
   overflow-x: hidden;
 }
 
@@ -32,18 +42,18 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4AF6A;
+  background: var(--color-gold);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #C4A05A;
+  background: #B99A5E;
 }
 
 /* Selection color */
 ::selection {
-  background-color: #D4AF6A;
-  color: #2C1810;
+  background-color: var(--color-gold);
+  color: var(--color-dark);
 }
 
 /* Shimmer animation for gold text effect */
@@ -88,7 +98,7 @@ body {
 /* Custom focus styles for accessibility */
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid #D4AF6A;
+  outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }
 
@@ -97,13 +107,13 @@ button:focus-visible {
   font-family: 'Heebo', sans-serif;
 }
 
-.font-playfair {
-  font-family: 'Playfair Display', serif;
+.font-frank-ruhl {
+  font-family: 'Frank Ruhl Libre', serif;
 }
 
 /* Gradient backgrounds */
 .bg-gradient-gold {
-  background: linear-gradient(135deg, #D4AF6A 0%, #E8B4A0 100%);
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-rose) 100%);
 }
 
 /* Glass morphism effect */
@@ -120,16 +130,16 @@ button:focus-visible {
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(212, 175, 106, 0.15);
+  box-shadow: 0 12px 40px rgba(201, 169, 110, 0.15);
 }
 
 /* Gold glow effect */
 .gold-glow {
-  box-shadow: 0 0 20px rgba(212, 175, 106, 0.3);
+  box-shadow: 0 0 20px rgba(201, 169, 110, 0.3);
 }
 
 .gold-glow:hover {
-  box-shadow: 0 0 40px rgba(212, 175, 106, 0.5);
+  box-shadow: 0 0 40px rgba(201, 169, 110, 0.5);
 }
 
 /* Balloon floating animation (CSS fallback) */

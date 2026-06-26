@@ -51,7 +51,7 @@ function BalloonSVG({ color, size }: { color: string; size: number }) {
       {/* String */}
       <path
         d="M50 105 Q45 120 50 135 Q55 150 50 160"
-        stroke="#2C1810"
+        stroke="#1A0A00"
         strokeWidth="1.5"
         strokeOpacity="0.3"
         fill="none"
@@ -127,15 +127,15 @@ interface FloatingBalloonsProps {
 export default function FloatingBalloons({ variant = 'hero' }: FloatingBalloonsProps) {
   const balloons = variant === 'hero'
     ? [
-        { color: '#D4AF6A', size: 70, left: '5%', top: '15%', delay: 0, parallaxSpeed: 0.3 },
-        { color: '#E8B4A0', size: 50, left: '15%', top: '60%', delay: 0.5, parallaxSpeed: 0.5 },
-        { color: '#D4AF6A', size: 55, left: '80%', top: '20%', delay: 1, parallaxSpeed: 0.4 },
-        { color: '#E8B4A0', size: 65, left: '88%', top: '55%', delay: 1.5, parallaxSpeed: 0.7 },
-        { color: '#D4AF6A', size: 45, left: '92%', top: '75%', delay: 2, parallaxSpeed: 0.35 },
+        { color: '#C9A96E', size: 70, left: '5%', top: '15%', delay: 0, parallaxSpeed: 0.3 },
+        { color: '#E8A598', size: 50, left: '15%', top: '60%', delay: 0.5, parallaxSpeed: 0.5 },
+        { color: '#C9A96E', size: 55, left: '80%', top: '20%', delay: 1, parallaxSpeed: 0.4 },
+        { color: '#E8A598', size: 65, left: '88%', top: '55%', delay: 1.5, parallaxSpeed: 0.7 },
+        { color: '#C9A96E', size: 45, left: '92%', top: '75%', delay: 2, parallaxSpeed: 0.35 },
       ]
     : [
-        { color: '#D4AF6A', size: 40, left: '3%', top: '20%', delay: 0, parallaxSpeed: 0.25 },
-        { color: '#E8B4A0', size: 35, left: '95%', top: '40%', delay: 0.5, parallaxSpeed: 0.4 },
+        { color: '#C9A96E', size: 40, left: '3%', top: '20%', delay: 0, parallaxSpeed: 0.25 },
+        { color: '#E8A598', size: 35, left: '95%', top: '40%', delay: 0.5, parallaxSpeed: 0.4 },
       ]
 
   return (

@@ -45,7 +45,7 @@ export function useScrollAnimation<T extends HTMLElement>(
         y: 0,
         opacity: 1,
         duration: 0.8,
-        ease: [0.23, 1, 0.32, 1] as any,
+        ease: 'power2.out',
         scrollTrigger: {
           trigger: elementRef.current,
           start,
@@ -115,7 +115,7 @@ export function useStaggerReveal(
         opacity: 1,
         duration: 0.6,
         stagger,
-        ease: [0.23, 1, 0.32, 1] as any,
+        ease: 'power2.out',
         scrollTrigger: {
           trigger: container,
           start: 'top 80%',

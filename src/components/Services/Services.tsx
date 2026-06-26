@@ -1,40 +1,67 @@
-// Services component - Service offerings grid with GSAP stagger animations
-// RTL direction: cards animate from right to left
+// Services - 5 elegant service cards with gold border hover
+// GSAP staggered reveal, warm boutique feeling
 
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import ShimmerText from '../shared/ShimmerText'
-import copy from '../../content/copy-he.json'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Service icons as SVG components
-const icons = [
-  // Wedding rings
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10">
-    <circle cx="9" cy="12" r="5" />
-    <circle cx="15" cy="12" r="5" />
-  </svg>,
-  // Birthday cake
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10">
-    <path d="M12 3v3m-3 3h6a3 3 0 013 3v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a3 3 0 013-3z" />
-    <path d="M8 9V6a1 1 0 011-1h.01" />
-    <path d="M16 9V6a1 1 0 00-1-1h-.01" />
-    <circle cx="12" cy="5" r="1" fill="currentColor" />
-  </svg>,
-  // Building/Corporate
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10">
-    <path d="M3 21h18M9 21V8l-6 3v10M9 8l6-3v16M15 5l6 3v13M9 12h.01M9 16h.01M15 8h.01M15 12h.01M15 16h.01" />
-  </svg>,
-  // Heart/Family
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-  </svg>,
-  // Star/Custom
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10">
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-  </svg>,
+const services = [
+  {
+    title: 'חתונות',
+    description: 'קשתות בלונים רומנטיות, רקעים לצילום ומתקני פרחים שישלימו את היום הגדול שלכם. כי החתונה שלכם ראויה לתפאורה שתגרום לאורחים לעצור ולהתפעל.',
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
+        <path d="M16 24c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="24" cy="32" r="6" stroke="currentColor" strokeWidth="2" />
+        <path d="M24 16v-6M24 44v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    title: 'ימי הולדת',
+    description: 'מפלי בלונים, מספרים ענקיים וערכות נושא צבעוניות שיגרמו לילד שלכם להרגיש כמו כוכב. הביטו בעיניים הבורקות כשהם נכנסים לחדר.',
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
+        <rect x="8" y="24" width="32" height="16" rx="3" stroke="currentColor" strokeWidth="2" />
+        <path d="M16 24v-4a2 2 0 012-2h12a2 2 0 012 2v4" stroke="currentColor" strokeWidth="2" />
+        <path d="M24 18v-8M20 10l4-4 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="24" cy="6" r="2" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    title: 'אירועים עסקיים',
+    description: 'עיצובים בצבעי המותג שלכם, קירות לוגו ומתקנים מרשימים שמעלים את הארגון שלכם רמה. כי גם אירועי חברה יכולים להיות בלתי נשכחים.',
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
+        <path d="M6 40h36M14 40V20M34 40V20M10 20h28v-6L24 8 10 14v6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="20" y="26" width="8" height="14" rx="1" stroke="currentColor" strokeWidth="2" />
+      </svg>
+    ),
+  },
+  {
+    title: 'בריתות ובר/בת מצווה',
+    description: 'חגיגות משפחתיות ראויות לעיצוב שמכבד את הרגע. מקשת כניסה ועד שולחן מתנות מעוצב, כל פרט במקומו.',
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
+        <path d="M24 4l4 12h12l-10 8 4 12-10-8-10 8 4-12-10-8h12l4-12z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: 'עיצוב מותאם אישית',
+    description: 'יש לכם רעיון שלא ראיתם בשום מקום? זה בדיוק מה שאנחנו אוהבים. ספרו לנו על החלום, ונהפוך אותו למציאות צבעונית.',
+    icon: (
+      <svg viewBox="0 0 48 48" fill="none" className="w-12 h-12">
+        <path d="M24 8c-8.8 0-16 7.2-16 16s7.2 16 16 16c2.2 0 4-1.8 4-4 0-1-.4-2-1-2.6-.6-.6-1-1.6-1-2.6 0-2.2 1.8-4 4-4h4.8c4.8 0 8.8-4 8.8-8.8 0-7.8-7.2-14-17.6-14z" stroke="currentColor" strokeWidth="2" />
+        <circle cx="16" cy="22" r="2" fill="currentColor" />
+        <circle cx="22" cy="16" r="2" fill="currentColor" />
+        <circle cx="32" cy="18" r="2" fill="currentColor" />
+      </svg>
+    ),
+  },
 ]
 
 export default function Services() {
@@ -49,11 +76,11 @@ export default function Services() {
       // Title animation
       gsap.fromTo(
         titleRef.current,
-        { y: 50, opacity: 0 },
+        { y: 60, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.8,
+          duration: 0.9,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: titleRef.current,
@@ -63,22 +90,22 @@ export default function Services() {
         }
       )
 
-      // Cards stagger animation - from right in RTL
+      // Cards stagger animation
       const cards = cardsRef.current?.querySelectorAll('.service-card')
       if (cards) {
         gsap.fromTo(
           cards,
-          { x: 100, opacity: 0, scale: 0.95 },
+          { y: 80, opacity: 0, scale: 0.95 },
           {
-            x: 0,
+            y: 0,
             opacity: 1,
             scale: 1,
-            duration: 0.6,
+            duration: 0.7,
             stagger: 0.12,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: cardsRef.current,
-              start: 'top 75%',
+              start: 'top 80%',
               toggleActions: 'play none none none',
             },
           }
@@ -93,53 +120,53 @@ export default function Services() {
     <section
       ref={sectionRef}
       id="services"
-      className="py-20 md:py-32 px-4 md:px-8 bg-[#FFFDF9] relative overflow-hidden"
+      className="py-24 md:py-32 px-6 md:px-10 bg-[#FFFDF9] relative overflow-hidden"
     >
-      {/* Background decorative element */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#D4AF6A]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-[#E8B4A0]/5 rounded-full blur-3xl" />
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 -right-20 w-96 h-96 bg-[#C9A96E]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 -left-20 w-80 h-80 bg-[#E8A598]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto relative z-10">
         {/* Section header */}
-        <div ref={titleRef} className="text-center mb-16 md:mb-20" style={{ opacity: 0 }}>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-heebo font-black text-[#2C1810] mb-6">
-            <ShimmerText>{copy.services.title}</ShimmerText>
+        <div ref={titleRef} className="text-center mb-20" style={{ opacity: 0 }}>
+          <h2 className="font-frank-ruhl text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A0A00] mb-6">
+            מה אנחנו יודעים לעשות הכי טוב
           </h2>
-          <p className="text-lg md:text-xl text-[#2C1810]/70 font-heebo max-w-2xl mx-auto">
-            {copy.services.subtitle}
+          <p className="font-heebo text-xl text-[#1A0A00]/60 max-w-2xl mx-auto">
+            כל אירוע מקבל תשומת לב אישית ועיצוב שמותאם בדיוק לחזון שלכם
           </p>
         </div>
 
         {/* Services grid */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {copy.services.items.map((service, index) => (
+          {services.map((service, index) => (
             <div
               key={index}
-              className="service-card group bg-white rounded-2xl p-8 shadow-lg shadow-black/5 hover:shadow-xl hover:shadow-[#D4AF6A]/10 transition-all duration-500 hover:-translate-y-2 border border-[#D4AF6A]/10"
+              className="service-card group bg-[#F5EDD6]/50 rounded-2xl p-8 md:p-10 border-2 border-transparent hover:border-[#C9A96E] transition-all duration-500 hover:shadow-xl hover:shadow-[#C9A96E]/10 hover:-translate-y-2"
               style={{ opacity: 0 }}
             >
               {/* Icon */}
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#D4AF6A] to-[#E8B4A0] flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300">
-                {icons[index]}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C9A96E] to-[#E8A598] flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform duration-500">
+                {service.icon}
               </div>
 
               {/* Title */}
-              <h3 className="text-xl md:text-2xl font-heebo font-bold text-[#2C1810] mb-4 group-hover:text-[#D4AF6A] transition-colors duration-300">
+              <h3 className="font-frank-ruhl text-2xl md:text-3xl font-bold text-[#1A0A00] mb-4 group-hover:text-[#C9A96E] transition-colors duration-300">
                 {service.title}
               </h3>
 
               {/* Description */}
-              <p className="text-[#2C1810]/70 font-heebo leading-relaxed">
+              <p className="font-heebo text-[#1A0A00]/70 leading-relaxed text-lg">
                 {service.description}
               </p>
 
               {/* Decorative line */}
-              <div className="mt-6 w-12 h-1 bg-gradient-to-r from-[#D4AF6A] to-transparent rounded-full group-hover:w-full transition-all duration-500" />
+              <div className="mt-8 w-12 h-1 bg-gradient-to-r from-[#C9A96E] to-transparent rounded-full group-hover:w-24 transition-all duration-500" />
             </div>
           ))}
         </div>

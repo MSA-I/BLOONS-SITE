@@ -1,13 +1,31 @@
-// Testimonials component - Customer reviews with GSAP blur fade animation
-// Gold quotation marks and elegant cards
+// Testimonials - 3 customer testimonials with organic card feel
+// Slight rotation, gold quotation marks, names and event types
 
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import ShimmerText from '../shared/ShimmerText'
-import copy from '../../content/copy-he.json'
 
 gsap.registerPlugin(ScrollTrigger)
+
+const testimonials = [
+  {
+    quote: 'הזמנו קשת בלונים לחתונה ולא היה לנו מושג שזה יהפוך לאטרקציה המרכזית של האירוע. כל האורחים התייצבו לתמונות מולה. פשוט הייתה שיחת הערב.',
+    name: 'רונית ואיתי כהן',
+    event: 'חתונה בגן אירועים',
+  },
+  {
+    quote: 'הבת שלי רצתה יום הולדת של חדי קרן. מה שהם עשו עם הבלונים - היא פשוט קפאה במקום כשנכנסה. הרגע הזה שווה כל שקל.',
+    name: 'מיכל לוי',
+    event: 'יום הולדת 6',
+  },
+  {
+    quote: 'אירוע השקה של מוצר חדש לחברה. הבלונים בצבעי הלוגו שלנו יצרו רקע מדהים לכל התמונות. הלקוחות שלנו היו המומים מהרמה.',
+    name: 'דני אברהמי',
+    event: 'אירוע השקה עסקי',
+  },
+]
+
+const rotations = [-2, 1, -1]
 
 export default function Testimonials() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -25,7 +43,7 @@ export default function Testimonials() {
         {
           y: 0,
           opacity: 1,
-          duration: 0.8,
+          duration: 0.9,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: titleRef.current,
@@ -35,13 +53,13 @@ export default function Testimonials() {
         }
       )
 
-      // Cards fade in with blur effect
+      // Cards fade in with blur and rotation
       const cards = cardsRef.current?.querySelectorAll('.testimonial-card')
       if (cards) {
         gsap.fromTo(
           cards,
           {
-            y: 60,
+            y: 80,
             opacity: 0,
             filter: 'blur(10px)',
           },
@@ -49,7 +67,7 @@ export default function Testimonials() {
             y: 0,
             opacity: 1,
             filter: 'blur(0px)',
-            duration: 0.8,
+            duration: 0.9,
             stagger: 0.15,
             ease: 'power3.out',
             scrollTrigger: {
@@ -69,61 +87,66 @@ export default function Testimonials() {
     <section
       ref={sectionRef}
       id="testimonials"
-      className="py-20 md:py-32 px-4 md:px-8 bg-[#FFFDF9] relative overflow-hidden"
+      className="py-24 md:py-32 px-6 md:px-10 bg-[#FFFDF9] relative overflow-hidden"
     >
       {/* Background decorative elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-[#D4AF6A]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-80 h-80 bg-[#E8B4A0]/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-[#C9A96E]/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#E8A598]/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto relative z-10">
         {/* Section header */}
-        <div ref={titleRef} className="text-center mb-16 md:mb-20" style={{ opacity: 0 }}>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-heebo font-black text-[#2C1810] mb-4">
-            <ShimmerText>{copy.testimonials.title}</ShimmerText>
+        <div ref={titleRef} className="text-center mb-20" style={{ opacity: 0 }}>
+          <h2 className="font-frank-ruhl text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A0A00] mb-4">
+            מה אומרים עלינו
           </h2>
         </div>
 
         {/* Testimonials grid */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
         >
-          {copy.testimonials.items.map((testimonial, index) => (
+          {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="testimonial-card relative bg-white rounded-2xl p-8 shadow-lg shadow-black/5 hover:shadow-xl transition-shadow duration-300 border border-[#D4AF6A]/10"
-              style={{ opacity: 0 }}
+              className="testimonial-card relative bg-[#F5EDD6]/70 rounded-3xl p-8 md:p-10 transition-all duration-500 hover:shadow-xl hover:shadow-[#C9A96E]/10 hover:-translate-y-2"
+              style={{
+                opacity: 0,
+                transform: `rotate(${rotations[index]}deg)`,
+              }}
             >
-              {/* Large decorative quote mark */}
-              <div className="absolute top-6 right-6 text-6xl font-playfair text-[#D4AF6A]/20 select-none leading-none">
-                "
+              {/* Large gold decorative quote mark */}
+              <div className="absolute top-6 right-8 select-none pointer-events-none">
+                <span className="font-frank-ruhl text-8xl text-[#C9A96E]/30 leading-none">
+                  "
+                </span>
               </div>
 
               {/* Quote */}
-              <blockquote className="relative z-10">
-                <p className="text-lg text-[#2C1810]/80 font-heebo leading-relaxed mb-6">
+              <blockquote className="relative z-10 pt-8">
+                <p className="font-heebo text-lg md:text-xl text-[#1A0A00]/80 leading-relaxed mb-8">
                   "{testimonial.quote}"
                 </p>
               </blockquote>
 
               {/* Author info */}
-              <div className="border-t border-[#D4AF6A]/20 pt-6 mt-auto">
-                <p className="font-heebo font-bold text-[#2C1810]">
+              <div className="border-t border-[#C9A96E]/20 pt-6">
+                <p className="font-heebo font-bold text-lg text-[#1A0A00]">
                   {testimonial.name}
                 </p>
-                <p className="text-sm text-[#D4AF6A] font-heebo mt-1">
+                <p className="font-heebo text-[#C9A96E] mt-1">
                   {testimonial.event}
                 </p>
               </div>
 
               {/* Star rating */}
-              <div className="flex gap-1 mt-4">
+              <div className="flex gap-1.5 mt-4">
                 {[...Array(5)].map((_, i) => (
                   <svg
                     key={i}
-                    className="w-5 h-5 text-[#D4AF6A]"
+                    className="w-5 h-5 text-[#C9A96E]"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
