@@ -7,11 +7,7 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
-import {
-  useSplitReveal,
-  useParallax,
-  prefersReducedMotion,
-} from '../../hooks/useScrollAnimation'
+import { useSplitReveal, prefersReducedMotion } from '../../hooks/useScrollAnimation'
 import MagneticButton from '../shared/MagneticButton'
 
 gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin)
@@ -33,10 +29,6 @@ export default function Hero() {
     start: 'top 95%',
   })
 
-  // Parallax depth orbs.
-  const orbGoldRef = useParallax<HTMLDivElement>(0.6)
-  const orbRoseRef = useParallax<HTMLDivElement>(0.35)
-
   // Orchestrated entrance (logo → sub → CTA → stats → cue).
   useEffect(() => {
     const section = sectionRef.current
@@ -49,10 +41,11 @@ export default function Hero() {
 
     const ctx = gsap.context(() => {
       // Initial hidden states (set in JS so reduced-motion users see content).
+      // No blur filter — animating filter:blur re-rasterizes the logo every
+      // frame; opacity + scale + clip give the same reveal GPU-cheaply.
       gsap.set(logoRef.current, {
         opacity: 0,
         scale: 1.14,
-        filter: 'blur(16px)',
         clipPath: 'inset(0% 0% 100% 0%)',
       })
       gsap.set([subRef.current, ctaWrapRef.current, statsRef.current], {
@@ -65,11 +58,10 @@ export default function Hero() {
 
       const tl = gsap.timeline({ delay: 0.35 })
 
-      // 1 — Logo: clip up + un-blur + settle.
+      // 1 — Logo: clip up + scale settle.
       tl.to(logoRef.current, {
         opacity: 1,
         scale: 1,
-        filter: 'blur(0px)',
         clipPath: 'inset(0% 0% 0% 0%)',
         duration: 1.3,
         ease: 'power4.out',
@@ -131,32 +123,19 @@ export default function Hero() {
       id="hero"
       className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-noir text-ivory"
     >
-      {/* ---- Layered depth: radial glow orbs (parallax) ---- */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div
-          ref={orbGoldRef}
-          className="absolute -top-32 right-[-10%] h-[42rem] w-[42rem] rounded-full opacity-[0.22] blur-[120px]"
-          style={{
-            background:
-              'radial-gradient(circle at center, #C9A96E 0%, rgba(201,169,110,0) 70%)',
-          }}
-        />
-        <div
-          ref={orbRoseRef}
-          className="absolute bottom-[-18%] left-[-12%] h-[38rem] w-[38rem] rounded-full opacity-[0.16] blur-[120px]"
-          style={{
-            background:
-              'radial-gradient(circle at center, #D9A6A0 0%, rgba(217,166,160,0) 70%)',
-          }}
-        />
-        <div
-          className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.10] blur-[100px]"
-          style={{
-            background:
-              'radial-gradient(circle at center, #E8C98B 0%, rgba(232,201,139,0) 72%)',
-          }}
-        />
-      </div>
+      {/* ---- Layered depth: static radial-gradient glow ---- */}
+      {/* Soft radial-gradient falloff gives the glow WITHOUT a blur() filter
+          (which forces expensive per-frame rasterization) — painted once. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(42rem 42rem at 90% -8%, rgba(201,169,110,0.20), transparent 60%),' +
+            'radial-gradient(38rem 38rem at -10% 112%, rgba(217,166,160,0.16), transparent 60%),' +
+            'radial-gradient(34rem 34rem at 50% 45%, rgba(232,201,139,0.10), transparent 65%)',
+        }}
+      />
 
       {/* ---- Decorative drawn-string balloon (inline SVG) ---- */}
       <svg

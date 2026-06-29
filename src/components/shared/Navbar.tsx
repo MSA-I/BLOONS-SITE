@@ -123,7 +123,7 @@ export default function Navbar() {
             'transition-[background-color,backdrop-filter,border-color,box-shadow] duration-500',
             'border',
             scrolled
-              ? 'border-sand/60 bg-ivory/80 shadow-[0_10px_40px_-18px_rgba(28,22,18,0.4)] backdrop-blur-xl'
+              ? 'border-sand/60 bg-ivory/90 shadow-[0_10px_40px_-18px_rgba(28,22,18,0.4)] backdrop-blur-md'
               : 'border-transparent bg-transparent',
           ].join(' ')}
           style={{ transitionTimingFunction: 'cubic-bezier(0.32,0.72,0,1)' }}
