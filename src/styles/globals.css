@@ -1,187 +1,290 @@
-@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Assistant:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================================
-   BALLOONICE — luxury editorial design system tokens
+   BALLOONICE — "élégance en l'air" warm boutique design system
+   Ported from the reference design (BALONICE Landing.dc.html).
    ============================================================ */
 :root {
-  /* Light bases */
-  --ivory: #F7F2EA;
-  --pearl: #EFE7DA;
-  --sand: #E4D8C5;
-  /* Text */
-  --ink: #1C1612;
-  --noir: #0B0908;
-  /* Metallics */
-  --gold: #C9A96E;
-  --goldlight: #E8C98B;
-  --rose: #D9A6A0;
-  --muted: #8A7E70;
-  /* On-dark */
-  --muted-dark: #A99F92;
-  /* Foil gradient (sheen) used for metallic accents ONLY */
-  --foil: linear-gradient(105deg, #C9A96E, #E8C98B, #C9A96E);
-  /* Signature easing */
-  --bezier: cubic-bezier(0.32, 0.72, 0, 1);
-  /* Clip-path reveal helper var */
-  --clip: inset(0%);
+  --ink: #211c1a;
+  --body: #5a524c;
+  --muted: #7a6f66;
+  --blush: #be7589;
+  --rose: #d99fa9;
+  --rose-light: #e7b7bf;
+  --gold: #9c7a33;
+  --gold-mid: #c9a24b;
+  --gold-light: #d4ae5e;
+  --bezier: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ============================================================
-   Base / RTL
-   ============================================================ */
+/* ---- Base / RTL ---- */
 html {
   direction: rtl;
 }
-
 body {
   font-family: 'Assistant', sans-serif;
-  background-color: var(--ivory);
-  color: var(--ink);
+  color: #4a423d;
+  background: linear-gradient(180deg, #fdf8f4, #fbf1ec);
+  background-attachment: fixed;
   overflow-x: hidden;
-  font-weight: 400;
   line-height: 1.65;
 }
-
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar — restrained, on-brand */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--pearl);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--sand);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gold);
-}
-
-/* Selection */
-::selection {
-  background-color: var(--gold);
-  color: var(--noir);
-}
-
-/* ============================================================
-   Direction helpers (phone / email render LTR inside RTL)
-   ============================================================ */
+/* Phone / email render LTR inside the RTL document */
 .dir-ltr {
   direction: ltr;
   unicode-bidi: embed;
   display: inline-block;
 }
 
-/* ============================================================
-   Metallic foil text — STATIC (no animation, used sparingly)
-   ============================================================ */
-.text-foil {
-  background: var(--foil);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+::selection {
+  background: var(--rose);
+  color: #fff;
+}
+::-webkit-scrollbar {
+  width: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #fbf1ec;
+}
+::-webkit-scrollbar-thumb {
+  background: #e3c3c9;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rose);
 }
 
-/* ============================================================
-   Section eyebrow / label — "01 / השירותים"
-   ============================================================ */
-.label {
-  font-family: 'Assistant', sans-serif;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-weight: 500;
-  color: var(--muted);
-}
-.label .label-index {
-  direction: ltr;
-  unicode-bidi: embed;
-  display: inline-block;
-}
-
-/* ============================================================
-   Clip-path reveal helper — element sets clip-path:var(--clip)
-   ============================================================ */
-.clip-reveal {
-  clip-path: var(--clip, inset(0));
-  -webkit-clip-path: var(--clip, inset(0));
-}
-
-/* ============================================================
-   Custom cursor — native cursor hidden on desktop only
-   ============================================================ */
-body.cursor-none,
-body.cursor-none * {
-  cursor: none !important;
-}
-
-/* ============================================================
-   Marquee — seamless continuous horizontal loop
-   ============================================================ */
-@keyframes marquee-rtl {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-.animate-marquee {
-  animation: marquee-rtl 28s linear infinite;
-  will-change: transform;
-}
-
-/* ============================================================
-   Accessibility — gold focus ring
-   ============================================================ */
 a:focus-visible,
 button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--rose);
   outline-offset: 3px;
-  border-radius: 2px;
-}
-
-/* Smooth scroll fallback (Lenis takes over when active) */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
+  border-radius: 4px;
 }
 
 /* ============================================================
-   prefers-reduced-motion — FULL short-circuit.
-   Content fully visible, no pins, no marquee, no transforms.
+   Keyframes (from the reference <style>)
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes swayA {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+@keyframes swayB {
+  0%, 100% { transform: translateY(-2px) rotate(2.6deg); }
+  50% { transform: translateY(-21px) rotate(-2.6deg); }
+}
+@keyframes swayC {
+  0%, 100% { transform: translateY(0) rotate(-1.4deg); }
+  50% { transform: translateY(-11px) rotate(1.8deg); }
+}
+@keyframes drift {
+  0% { transform: translateY(60px); opacity: 0; }
+  14% { opacity: 0.4; }
+  86% { opacity: 0.4; }
+  100% { transform: translateY(-560px) translateX(34px); opacity: 0; }
+}
+@keyframes shimmer {
+  0% { background-position: 180% 0; }
+  100% { background-position: -180% 0; }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.06); }
+}
+@keyframes nudgeY {
+  0%, 100% { transform: translateY(-5px); }
+  50% { transform: translateY(5px); }
+}
+@keyframes nudgeX {
+  0%, 100% { transform: translateX(-6px); }
+  50% { transform: translateX(6px); }
+}
+@keyframes overlayIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ============================================================
+   Reveal-on-scroll — initial hidden state set here; the
+   useReveal hook flips opacity/transform when in view.
+   ============================================================ */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--bezier), transform 0.7s var(--bezier);
+}
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   Interactive states (the reference's style-hover / style-focus,
+   which don't exist in React, become real CSS here)
+   ============================================================ */
+
+/* Shimmer pill CTA — used in nav, hero, gallery, contact, overlay */
+.btn-shimmer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #d99fa9, #be7589 45%, #e7b7bf 52%, #be7589 60%, #d99fa9);
+  background-size: 220% 100%;
+  color: #fff;
+  font-family: 'Assistant', sans-serif;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 12px 26px -10px rgba(170, 90, 110, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  animation: shimmer 6s linear infinite;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-shimmer:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px -10px rgba(170, 90, 110, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.btn-shimmer--sm {
+  box-shadow: 0 8px 18px -8px rgba(170, 90, 110, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.btn-shimmer--sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(170, 90, 110, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+/* Nav links */
+.nav-link {
+  cursor: pointer;
+  padding-bottom: 3px;
+  border-bottom: 1.5px solid transparent;
+  color: #5a4a47;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+.nav-link:hover {
+  color: #be7589;
+  border-bottom-color: #d99fa9;
+}
+
+/* Gold underline arrow link */
+.link-gold {
+  color: #9c7a33;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid #d4ae5e;
+  padding-bottom: 3px;
+  transition: color 0.2s;
+}
+.link-gold:hover {
+  color: #b68a35;
+}
+
+/* Service rows */
+.svc-row {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 22px 18px;
+  border-top: 1px solid #ead9d2;
+  border-radius: 12px;
+  cursor: default;
+  transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+.svc-row:hover {
+  background: #fbefea;
+  box-shadow: inset 4px 0 0 #d99fa9;
+  transform: translateX(-6px);
+}
+
+/* Gallery balloon cards */
+.gal-card {
+  transition: transform 0.35s var(--bezier);
+}
+.gal-card:hover {
+  transform: translateY(-10px) scale(1.03);
+}
+
+/* Form fields */
+.field {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ebd7d0;
+  border-radius: 10px;
+  background: #fcf7f3;
+  font-family: 'Assistant', sans-serif;
+  font-size: 15px;
+  color: #3a2f2c;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field:focus {
+  border-color: #d99fa9;
+  box-shadow: 0 0 0 3px rgba(217, 159, 169, 0.25);
+  background: #fff;
+}
+
+/* Contact info links */
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 17px;
+  color: #3a2f2c;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.contact-link:hover {
+  color: #be7589;
+}
+
+/* Event-overlay back button + photo tiles */
+.ev-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #be7589;
+  font-weight: 600;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+.ev-back:hover {
+  color: #9c3f58;
+}
+.ev-tile {
+  transition: transform 0.4s var(--bezier);
+}
+.ev-tile:hover {
+  transform: scale(1.03);
+}
+
+/* ============================================================
+   prefers-reduced-motion — kill animation/transition, reveal all
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  .animate-marquee {
     animation: none !important;
+    transition: none !important;
+  }
+  [data-reveal] {
+    opacity: 1 !important;
     transform: none !important;
-  }
-  .clip-reveal {
-    clip-path: inset(0) !important;
-    -webkit-clip-path: inset(0) !important;
-  }
-  body.cursor-none,
-  body.cursor-none * {
-    cursor: auto !important;
   }
 }

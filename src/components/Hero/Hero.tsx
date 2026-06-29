@@ -1,260 +1,176 @@
-// Hero — BALLOONICE luxury redesign · NOIR cinematic
-// Layered radial glow orbs (parallax) · clip/scale/blur logo entrance ·
-// char-split headline · magnetic button-in-button CTA · count-style trust
-// figures · brass scroll-cue. Sequence: logo → headline → sub → CTA → stats → cue.
+// Hero — two columns: editorial copy (staggered reveal) + an interactive,
+// draggable balloon cluster (useBalloons physics). Ported from the reference.
 
-import { useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
-import { useSplitReveal, prefersReducedMotion } from '../../hooks/useScrollAnimation'
-import MagneticButton from '../shared/MagneticButton'
+import { useRef, type CSSProperties } from 'react'
+import { useBalloons } from '../../hooks/useBalloons'
 
-gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin)
+const balloonBody = (grad: string, shadow: string): CSSProperties => ({
+  position: 'absolute',
+  inset: 0,
+  borderRadius: '50% 50% 50% 50%/45% 45% 55% 55%',
+  background: grad,
+  boxShadow: shadow,
+})
+
+interface BalloonDef {
+  left: number
+  top: number
+  width: number
+  height: number
+  body: CSSProperties
+  highlight: { width: number; height: number }
+  knot: { border: number; color: string }
+}
+
+const BALLOONS: BalloonDef[] = [
+  {
+    left: 118, top: 14, width: 122, height: 148,
+    body: balloonBody(
+      'radial-gradient(circle at 35% 26%,#F8DDD7 0%,#DC93A0 46%,#B2607A 100%)',
+      'inset -9px -11px 24px rgba(120,50,70,.26),inset 8px 8px 18px rgba(255,255,255,.5),0 22px 38px -16px rgba(150,80,100,.5)',
+    ),
+    highlight: { width: 28, height: 40 },
+    knot: { border: 7, color: '#B2607A' },
+  },
+  {
+    left: 236, top: 2, width: 98, height: 120,
+    body: balloonBody(
+      'radial-gradient(circle at 35% 26%,#F7E6B6 0%,#D2A857 46%,#9C7A33 100%)',
+      'inset -8px -10px 20px rgba(120,80,30,.26),inset 7px 7px 16px rgba(255,255,255,.5),0 20px 34px -15px rgba(150,110,40,.5)',
+    ),
+    highlight: { width: 22, height: 32 },
+    knot: { border: 6, color: '#9C7A33' },
+  },
+  {
+    left: 34, top: 92, width: 88, height: 106,
+    body: balloonBody(
+      'radial-gradient(circle at 35% 26%,#FCE9E0 0%,#E7B49E 48%,#C98979 100%)',
+      'inset -7px -9px 18px rgba(150,90,70,.24),inset 6px 6px 14px rgba(255,255,255,.55),0 18px 30px -14px rgba(160,100,80,.45)',
+    ),
+    highlight: { width: 20, height: 29 },
+    knot: { border: 5, color: '#C98979' },
+  },
+  {
+    left: 300, top: 128, width: 78, height: 96,
+    body: balloonBody(
+      'radial-gradient(circle at 35% 26%,#FBF0CF 0%,#E2C77E 50%,#C2A14B 100%)',
+      'inset -6px -8px 15px rgba(140,110,40,.22),inset 6px 6px 12px rgba(255,255,255,.55),0 16px 26px -13px rgba(150,120,50,.45)',
+    ),
+    highlight: { width: 17, height: 25 },
+    knot: { border: 5, color: '#C2A14B' },
+  },
+  {
+    left: 168, top: 158, width: 74, height: 90,
+    body: balloonBody(
+      'radial-gradient(circle at 35% 26%,#FBE2E2 0%,#EBADB7 50%,#D38698 100%)',
+      'inset -6px -8px 15px rgba(150,80,100,.22),inset 6px 6px 12px rgba(255,255,255,.55),0 16px 26px -13px rgba(160,90,110,.45)',
+    ),
+    highlight: { width: 16, height: 24 },
+    knot: { border: 5, color: '#D38698' },
+  },
+]
 
 export default function Hero() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const logoRef = useRef<HTMLImageElement>(null)
-  const subRef = useRef<HTMLParagraphElement>(null)
-  const ctaWrapRef = useRef<HTMLDivElement>(null)
-  const statsRef = useRef<HTMLDivElement>(null)
-  const cueRef = useRef<HTMLDivElement>(null)
-  const stringRef = useRef<SVGPathElement>(null)
-  const balloonRef = useRef<SVGGElement>(null)
-
-  // Headline: alternating char reveal (foundation hook).
-  const headlineRef = useSplitReveal<HTMLHeadingElement>({
-    type: 'chars',
-    stagger: 0.025,
-    start: 'top 95%',
-  })
-
-  // Orchestrated entrance (logo → sub → CTA → stats → cue).
-  useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-
-    if (prefersReducedMotion()) {
-      // Everything is visible by default — nothing to do.
-      return
-    }
-
-    const ctx = gsap.context(() => {
-      // Initial hidden states (set in JS so reduced-motion users see content).
-      // No blur filter — animating filter:blur re-rasterizes the logo every
-      // frame; opacity + scale + clip give the same reveal GPU-cheaply.
-      gsap.set(logoRef.current, {
-        opacity: 0,
-        scale: 1.14,
-        clipPath: 'inset(0% 0% 100% 0%)',
-      })
-      gsap.set([subRef.current, ctaWrapRef.current, statsRef.current], {
-        opacity: 0,
-        y: 38,
-      })
-      gsap.set(cueRef.current, { opacity: 0, y: 12 })
-      if (balloonRef.current) gsap.set(balloonRef.current, { opacity: 0, scale: 0.8, transformOrigin: '50% 100%' })
-      if (stringRef.current) gsap.set(stringRef.current, { drawSVG: '0%' })
-
-      const tl = gsap.timeline({ delay: 0.35 })
-
-      // 1 — Logo: clip up + scale settle.
-      tl.to(logoRef.current, {
-        opacity: 1,
-        scale: 1,
-        clipPath: 'inset(0% 0% 0% 0%)',
-        duration: 1.3,
-        ease: 'power4.out',
-      })
-
-      // Decorative balloon + drawn string, layered with the logo.
-      if (balloonRef.current) {
-        tl.to(
-          balloonRef.current,
-          { opacity: 1, scale: 1, duration: 1, ease: 'power3.out' },
-          '-=0.9'
-        )
-      }
-      if (stringRef.current) {
-        tl.to(
-          stringRef.current,
-          { drawSVG: '100%', duration: 1.1, ease: 'power2.out' },
-          '<'
-        )
-      }
-
-      // 2 — Headline handled by useSplitReveal (fires in-view at top).
-
-      // 3 — Subhead.
-      tl.to(
-        subRef.current,
-        { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' },
-        '-=0.45'
-      )
-
-      // 4 — CTA.
-      tl.to(
-        ctaWrapRef.current,
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.55'
-      )
-
-      // 5 — Trust figures.
-      tl.to(
-        statsRef.current,
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
-        '-=0.55'
-      )
-
-      // 6 — Scroll cue.
-      tl.to(
-        cueRef.current,
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
-        '-=0.4'
-      )
-    }, section)
-
-    return () => ctx.revert()
-  }, [])
+  const stageRef = useRef<HTMLDivElement>(null)
+  useBalloons(stageRef)
 
   return (
-    <section
-      ref={sectionRef}
-      id="hero"
-      className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-noir text-ivory"
-    >
-      {/* ---- Layered depth: static radial-gradient glow ---- */}
-      {/* Soft radial-gradient falloff gives the glow WITHOUT a blur() filter
-          (which forces expensive per-frame rasterization) — painted once. */}
+    <div id="hero" style={{ position: 'relative', overflow: 'hidden', minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
+      {/* drifting background balloons */}
       <div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden="true"
         style={{
-          background:
-            'radial-gradient(42rem 42rem at 90% -8%, rgba(201,169,110,0.20), transparent 60%),' +
-            'radial-gradient(38rem 38rem at -10% 112%, rgba(217,166,160,0.16), transparent 60%),' +
-            'radial-gradient(34rem 34rem at 50% 45%, rgba(232,201,139,0.10), transparent 65%)',
+          position: 'absolute', top: 120, right: '8%', width: 46, height: 58,
+          borderRadius: '50% 50% 50% 50%/46% 46% 54% 54%',
+          background: 'radial-gradient(circle at 36% 28%,#F6DAD4,#D98E9B 60%,#B2607A)',
+          opacity: 0.13, filter: 'blur(1px)', animation: 'drift 26s linear infinite',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute', top: 340, right: '24%', width: 34, height: 43,
+          borderRadius: '50% 50% 50% 50%/46% 46% 54% 54%',
+          background: 'radial-gradient(circle at 36% 28%,#F4DEA9,#C9A24B 60%,#9C7A33)',
+          opacity: 0.12, filter: 'blur(1px)', animation: 'drift 32s linear -8s infinite',
         }}
       />
 
-      {/* ---- Decorative drawn-string balloon (inline SVG) ---- */}
-      <svg
-        className="pointer-events-none absolute left-[8%] top-[14%] hidden h-[26vh] w-auto md:block"
-        viewBox="0 0 120 260"
-        fill="none"
-        aria-hidden="true"
+      <div
+        style={{
+          position: 'relative', zIndex: 2, display: 'grid', gridTemplateColumns: '1.04fr .96fr',
+          gap: 36, alignItems: 'center', padding: '40px 56px 70px', maxWidth: 1280, margin: '0 auto', width: '100%',
+        }}
       >
-        <g ref={balloonRef}>
-          <ellipse
-            cx="60"
-            cy="58"
-            rx="44"
-            ry="54"
-            stroke="#C9A96E"
-            strokeOpacity="0.5"
-            strokeWidth="1.2"
-          />
-          <path
-            d="M60 112 L54 124 L66 124 Z"
-            stroke="#C9A96E"
-            strokeOpacity="0.5"
-            strokeWidth="1.2"
-            strokeLinejoin="round"
-          />
-        </g>
-        <path
-          ref={stringRef}
-          d="M60 124 C 70 160, 50 188, 62 218 C 70 238, 56 250, 60 258"
-          stroke="#D9A6A0"
-          strokeOpacity="0.45"
-          strokeWidth="1"
-          strokeLinecap="round"
-        />
-      </svg>
-
-      {/* ---- Content ---- */}
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 pb-24 pt-28 text-center md:px-10">
-        {/* Logo */}
-        <img
-          ref={logoRef}
-          src="/assets/logo.png"
-          alt="BALLOONICE"
-          className="clip-reveal mb-10 h-20 w-auto select-none md:h-28"
-          draggable={false}
-        />
-
-        {/* Headline — char split reveal */}
-        <h1
-          ref={headlineRef}
-          className="font-display font-bold leading-[0.95] tracking-tight"
-          style={{ fontSize: 'clamp(3.5rem, 9vw, 8rem)' }}
-        >
-          האירוע שלכם, הקסם שלנו
-        </h1>
-
-        {/* Subhead */}
-        <p
-          ref={subRef}
-          className="mx-auto mt-8 max-w-2xl font-body text-lg font-light leading-relaxed text-[#A99F92] md:text-xl"
-        >
-          עיצובי בלונים יוקרתיים שהופכים רגעים פשוטים לזיכרונות שנשארים. אתם
-          חולמים, אנחנו מגשימים.
-        </p>
-
-        {/* Primary CTA — magnetic, button-in-button arrow */}
-        <div ref={ctaWrapRef} className="mt-12">
-          <MagneticButton href="#contact" label="בואו נתכנן יחד" variant="foil" />
+        {/* left — copy */}
+        <div>
+          <div data-reveal data-reveal-delay="0" style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', fontWeight: 500, fontSize: 23, color: '#BE7589', marginBottom: 6 }}>
+            élégance en l&apos;air
+          </div>
+          <div data-reveal data-reveal-delay="80" style={{ fontWeight: 600, fontSize: 13, letterSpacing: '.16em', color: '#B26076', marginBottom: 20 }}>
+            עיצוב בלונים לאירועים מיוחדים
+          </div>
+          <h1 data-reveal data-reveal-delay="140" style={{ fontFamily: "'Frank Ruhl Libre',serif", fontWeight: 500, fontSize: 62, lineHeight: 1.04, color: '#211C1A', margin: '0 0 22px', letterSpacing: '-.015em' }}>
+            נותנים לכל<br />אירוע <span style={{ color: '#BE7589' }}>צבע</span><br />של שמחה
+          </h1>
+          <p data-reveal data-reveal-delay="220" style={{ fontSize: 18, lineHeight: 1.75, color: '#5A524C', margin: '0 0 34px', maxWidth: 440 }}>
+            סטודיו לעיצוב בלונים שמתרגם רגשות לקומפוזיציות מרהיבות. כל פרויקט נתפר אישית — מהקונספט ועד ההתקנה במקום האירוע.
+          </p>
+          <div data-reveal data-reveal-delay="300" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <a href="#contact" className="btn-shimmer" style={{ padding: '15px 34px', fontSize: 16 }}>
+              בואו נתכנן יחד
+            </a>
+            <a href="#gallery" className="link-gold" style={{ fontSize: 16 }}>
+              לצפייה בגלריה ←
+            </a>
+          </div>
         </div>
 
-        {/* Trust figures */}
-        <div
-          ref={statsRef}
-          className="mt-16 flex items-center justify-center gap-10 md:gap-16"
-        >
-          <div className="flex flex-col items-center">
-            <span dir="ltr" className="dir-ltr font-display text-4xl font-bold text-foil md:text-5xl">
-              500+
-            </span>
-            <span className="mt-1 font-body text-sm text-[#A99F92]">אירועים</span>
+        {/* right — interactive balloon stage */}
+        <div ref={stageRef} data-reveal data-reveal-delay="150" style={{ position: 'relative', height: 480 }}>
+          <div
+            style={{
+              position: 'absolute', left: '50%', top: '48%', transform: 'translate(-50%,-50%)',
+              width: 380, height: 380, borderRadius: '50%',
+              background: 'radial-gradient(circle,rgba(231,183,191,.55),rgba(244,222,169,.25) 55%,transparent 72%)',
+              filter: 'blur(8px)', animation: 'glowPulse 9s ease-in-out infinite', pointerEvents: 'none',
+            }}
+          />
+          <svg data-strings style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible', pointerEvents: 'none', zIndex: 1 }} />
+          <div data-ribbon style={{ position: 'absolute', left: '50%', top: '90%', transform: 'translate(-50%,-50%)', zIndex: 2, width: 30, height: 16, pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', left: 1, top: 0, width: 0, height: 0, borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderRight: '14px solid #C98293' }} />
+            <div style={{ position: 'absolute', right: 1, top: 0, width: 0, height: 0, borderTop: '8px solid transparent', borderBottom: '8px solid transparent', borderLeft: '14px solid #C98293' }} />
+            <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 9, height: 9, borderRadius: '50%', background: '#B2607A' }} />
           </div>
-          <span className="h-12 w-px bg-gold/30" aria-hidden="true" />
-          <div className="flex flex-col items-center">
-            <span dir="ltr" className="dir-ltr font-display text-4xl font-bold text-foil md:text-5xl">
-              5+
-            </span>
-            <span className="mt-1 font-body text-sm text-[#A99F92]">
-              שנות ניסיון
-            </span>
+          <div data-hint style={{ position: 'absolute', top: 6, right: 4, zIndex: 5, fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', fontSize: 15, color: '#A8536B', background: 'rgba(255,255,255,.72)', padding: '5px 13px', borderRadius: 999, boxShadow: '0 6px 16px -8px rgba(150,90,100,.45)', pointerEvents: 'none', transition: 'opacity .6s' }}>
+            ✦ גררו את הבלונים
+          </div>
+
+          {BALLOONS.map((b, i) => (
+            <div
+              key={i}
+              data-balloon
+              style={{ position: 'absolute', left: b.left, top: b.top, width: b.width, height: b.height, transformOrigin: '50% 100%', cursor: 'grab', touchAction: 'none', willChange: 'transform' }}
+            >
+              <div style={b.body} />
+              <div style={{ position: 'absolute', top: '13%', left: '21%', width: b.highlight.width, height: b.highlight.height, borderRadius: '50%', background: 'rgba(255,255,255,.55)', filter: 'blur(3px)' }} />
+              <div style={{ position: 'absolute', bottom: -9, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: `${b.knot.border}px solid transparent`, borderRight: `${b.knot.border}px solid transparent`, borderTop: `12px solid ${b.knot.color}` }} />
+            </div>
+          ))}
+
+          {/* stat card */}
+          <div data-reveal data-reveal-delay="600" style={{ position: 'absolute', bottom: 30, left: -14, zIndex: 3, background: '#fff', borderRadius: 16, padding: '15px 20px', boxShadow: '0 18px 36px -14px rgba(120,70,80,.4)', textAlign: 'center' }}>
+            <div data-count="350" data-suffix="+" style={{ fontFamily: "'Frank Ruhl Libre',serif", fontSize: 28, color: '#BE7589', lineHeight: 1 }}>350+</div>
+            <div style={{ fontSize: 12, color: '#7A6F66', marginTop: 2 }}>אירועים מעוצבים</div>
           </div>
         </div>
       </div>
 
-      {/* ---- Brass scroll cue ---- */}
-      <div
-        ref={cueRef}
-        className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2"
-        aria-hidden="true"
-      >
-        <span className="flex h-11 w-7 items-start justify-center rounded-full border border-gold/40 p-1.5">
-          <span className="h-2 w-2 animate-cue-drop rounded-full bg-gold" />
+      {/* scroll cue */}
+      <div style={{ position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, color: '#B26076', fontFamily: "'Cormorant Garamond',serif", fontStyle: 'italic', fontSize: 15 }}>
+        גללו למטה
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 34, border: '1px solid #D99FA9', borderRadius: 999 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#BE7589', animation: 'nudgeY 1.5s ease-in-out infinite' }} />
         </span>
       </div>
-
-      {/* Local keyframes for the falling dot (kept transform-only). */}
-      <style>{`
-        @keyframes cue-drop {
-          0% { transform: translateY(0); opacity: 0; }
-          25% { opacity: 1; }
-          70% { transform: translateY(10px); opacity: 0; }
-          100% { transform: translateY(10px); opacity: 0; }
-        }
-        .animate-cue-drop {
-          animation: cue-drop 1.9s cubic-bezier(0.32, 0.72, 0, 1) infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-cue-drop { animation: none; opacity: 1; }
-        }
-      `}</style>
-    </section>
+    </div>
   )
 }
