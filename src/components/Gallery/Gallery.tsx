@@ -1,105 +1,98 @@
-// Gallery component - Masonry grid with lightbox functionality
-// GSAP scroll animations, RTL direction, Hebrew headings
+// Gallery — section 5, NOIR zone.
+// Signature horizontal-pinned showcase: a track of 6 image panels that
+// scrolls right -> left (RTL) while the section is pinned (desktop).
+// Mobile / reduced-motion: pin is disabled by the hook, panels stack & swipe.
 
-import { useEffect, useRef, useState } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import ShimmerText from '../shared/ShimmerText'
+import { useRef, useState } from 'react'
+import {
+  useHorizontalPin,
+  prefersReducedMotion,
+} from '../../hooks/useScrollAnimation'
+import MagneticButton from '../shared/MagneticButton'
 import LightboxModal from './LightboxModal'
 
-gsap.registerPlugin(ScrollTrigger)
+export interface GalleryImage {
+  src: string
+  alt: string
+}
 
-// Gallery images with Unsplash sources
-const GALLERY_IMAGES = [
-  { src: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800', alt: 'בלונים לחתונה' },
-  { src: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=800', alt: 'עיצוב אירוע' },
-  { src: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=800', alt: 'בלונים צבעוניים' },
-  { src: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800', alt: 'יום הולדת' },
-  { src: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800', alt: 'חגיגה' },
-  { src: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800', alt: 'אירוע מיוחד' },
+const GALLERY_IMAGES: GalleryImage[] = [
+  { src: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1200&q=80', alt: 'בלונים לחתונה' },
+  { src: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1200&q=80', alt: 'עיצוב אירוע' },
+  { src: 'https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=1200&q=80', alt: 'בלונים צבעוניים' },
+  { src: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1200&q=80', alt: 'יום הולדת' },
+  { src: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1200&q=80', alt: 'חגיגה' },
+  { src: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80', alt: 'אירוע מיוחד' },
 ]
+
+/* ---- single image panel: reveal is wired by useHorizontalPin (containerAnimation) ---- */
+interface ImagePanelProps {
+  image: GalleryImage
+  index: number
+  onOpen: (index: number) => void
+}
+
+function ImagePanel({ image, index, onOpen }: ImagePanelProps) {
+  const num = String(index + 1).padStart(2, '0')
+
+  return (
+    <article className="group flex shrink-0 flex-col justify-center gap-6 md:h-screen md:py-[14vh]">
+      <button
+        type="button"
+        onClick={() => onOpen(index)}
+        data-cursor
+        aria-label={`הגדל תמונה: ${image.alt}`}
+        className="block w-full overflow-hidden rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-noir"
+      >
+        <div
+          data-gallery-panel
+          className="relative aspect-[4/5] w-full overflow-hidden bg-ink md:h-[58vh] md:w-auto"
+        >
+          <img
+            src={image.src}
+            alt={image.alt}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full scale-[1.04] object-cover transition-transform duration-[1100ms] ease-spring will-change-transform group-hover:scale-110"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-noir/55 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        </div>
+      </button>
+
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="label text-gold">
+          <span className="label-index">{num} /</span>
+        </span>
+        <span className="font-display text-lg text-ivory md:text-xl">{image.alt}</span>
+      </div>
+    </article>
+  )
+}
 
 export default function Gallery() {
   const sectionRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLDivElement>(null)
-  const gridRef = useRef<HTMLDivElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
 
-  // Lightbox state
+  // Pin the section, slide the track right -> left on desktop, and reveal each
+  // panel as it enters horizontal view (containerAnimation-linked).
+  useHorizontalPin(sectionRef, trackRef, { panelSelector: '[data-gallery-panel]' })
+
+  // When the pin is disabled (reduced-motion) the over-wide horizontal track
+  // would be clipped by overflow-hidden on desktop — make it natively
+  // scrollable instead so every panel stays reachable.
+  const reduced = prefersReducedMotion()
+
+  const [lightboxIndex, setLightboxIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  // Open lightbox
   const openLightbox = (index: number) => {
-    setCurrentImageIndex(index)
+    setLightboxIndex(index)
     setIsLightboxOpen(true)
   }
-
-  // Close lightbox
-  const closeLightbox = () => {
-    setIsLightboxOpen(false)
-  }
-
-  // Navigate to previous image
-  const goToPrev = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? GALLERY_IMAGES.length - 1 : prev - 1
-    )
-  }
-
-  // Navigate to next image
-  const goToNext = () => {
-    setCurrentImageIndex((prev) =>
-      prev === GALLERY_IMAGES.length - 1 ? 0 : prev + 1
-    )
-  }
-
-  // GSAP animations
-  useEffect(() => {
-    if (!sectionRef.current) return
-
-    const ctx = gsap.context(() => {
-      // Title animation
-      gsap.fromTo(
-        titleRef.current,
-        { y: 50, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: titleRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        }
-      )
-
-      // Gallery items stagger animation
-      const items = gridRef.current?.querySelectorAll('.gallery-item')
-      if (items) {
-        gsap.fromTo(
-          items,
-          { y: 60, opacity: 0, scale: 0.9 },
-          {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            duration: 0.7,
-            stagger: 0.1,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: gridRef.current,
-              start: 'top 80%',
-              toggleActions: 'play none none none',
-            },
-          }
-        )
-      }
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
+  const closeLightbox = () => setIsLightboxOpen(false)
+  const goToPrev = () =>
+    setLightboxIndex((i) => (i === 0 ? GALLERY_IMAGES.length - 1 : i - 1))
+  const goToNext = () =>
+    setLightboxIndex((i) => (i === GALLERY_IMAGES.length - 1 ? 0 : i + 1))
 
   return (
     <>
@@ -107,102 +100,58 @@ export default function Gallery() {
         ref={sectionRef}
         id="gallery"
         dir="rtl"
-        className="py-20 md:py-32 px-4 md:px-8 bg-gradient-to-b from-[#FAF6F0] to-[#FFFDF9] relative overflow-hidden"
+        className={`relative bg-noir text-ivory ${reduced ? 'overflow-x-auto overflow-y-hidden' : 'overflow-hidden'}`}
+        aria-label="גלריה"
       >
-        {/* Background decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-1/3 -left-20 w-80 h-80 bg-[#C9A96E]/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/3 -right-20 w-96 h-96 bg-[#E8A598]/5 rounded-full blur-3xl" />
-        </div>
-
-        <div className="container mx-auto relative z-10">
-          {/* Section header */}
-          <div ref={titleRef} className="text-center mb-16 md:mb-20" style={{ opacity: 0 }}>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-heebo font-black text-[#1A0A00] mb-6">
-              <ShimmerText>הגלריה שלנו</ShimmerText>
+        <div
+          ref={trackRef}
+          className="flex flex-col gap-16 px-5 py-20 md:h-screen md:w-max md:flex-row md:flex-nowrap md:items-stretch md:gap-[7vw] md:px-[8vw] md:py-0"
+        >
+          {/* Intro panel — oversized heading travels horizontally during the pin */}
+          <header className="flex shrink-0 flex-col justify-center md:h-screen md:w-[68vw] lg:w-[46vw]">
+            <span className="label text-gold">
+              <span className="label-index">05 /</span> גלריה
+            </span>
+            <h2 className="mt-6 font-display font-bold leading-[0.95] text-ivory [font-size:clamp(2.6rem,8vw,7rem)]">
+              העבודות
+              <br />
+              <span className="text-foil">שלנו</span>
             </h2>
-            <p className="text-lg md:text-xl text-[#1A0A00]/70 font-heebo max-w-2xl mx-auto">
-              רגעים מיוחדים מהאירועים שעיצבנו עם אהבה
+            <p className="mt-8 max-w-md font-body text-base font-light leading-relaxed text-[#A99F92] md:text-lg">
+              גללו כדי לראות רגעים מהאירועים שעיצבנו. לחצו על תמונה להגדלה.
             </p>
-          </div>
+          </header>
 
-          {/* Masonry grid */}
-          <div
-            ref={gridRef}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-            style={{
-              gridAutoRows: 'minmax(200px, auto)',
-            }}
-          >
-            {GALLERY_IMAGES.map((image, index) => (
-              <div
-                key={index}
-                className={`gallery-item group relative overflow-hidden rounded-2xl cursor-pointer ${
-                  // Vary heights for masonry effect
-                  index % 5 === 0 ? 'sm:row-span-2' : ''
-                } ${index % 3 === 1 ? 'lg:row-span-2' : ''}`}
-                style={{ opacity: 0 }}
-                onClick={() => openLightbox(index)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    openLightbox(index)
-                  }
-                }}
-                aria-label={`פתח תמונה: ${image.alt}`}
-              >
-                {/* Image */}
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  loading="lazy"
-                />
+          {/* Image panels */}
+          {GALLERY_IMAGES.map((image, index) => (
+            <ImagePanel
+              key={image.src}
+              image={image}
+              index={index}
+              onOpen={openLightbox}
+            />
+          ))}
 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1A0A00]/80 via-[#1A0A00]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                {/* Caption */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                  <span className="text-white font-heebo font-bold text-lg md:text-xl">
-                    {image.alt}
-                  </span>
-                </div>
-
-                {/* Zoom icon */}
-                <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-[#C9A96E] flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-all duration-300 scale-50 group-hover:scale-100">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                  </svg>
-                </div>
-
-                {/* Border glow on hover */}
-                <div className="absolute inset-0 rounded-2xl ring-2 ring-[#C9A96E]/0 group-hover:ring-[#C9A96E]/50 transition-all duration-500" />
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="text-center mt-12 md:mt-16">
-            <a
-              href="tel:0504127772"
-              className="inline-flex items-center gap-3 bg-[#C9A96E] hover:bg-[#B8985E] text-[#1A0A00] font-heebo font-bold text-base md:text-lg py-3 px-8 md:py-4 md:px-10 rounded-full transition-all duration-300 shadow-lg shadow-[#C9A96E]/30 hover:shadow-xl hover:shadow-[#C9A96E]/40 hover:-translate-y-1"
-            >
-              <span>רוצים משהו דומה? דברו איתנו</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-            </a>
+          {/* Closing CTA panel */}
+          <div className="flex shrink-0 flex-col justify-center gap-8 md:h-screen md:w-[60vw] lg:w-[40vw]">
+            <p className="font-display leading-[1.05] text-ivory [font-size:clamp(1.9rem,4.5vw,3.4rem)]">
+              רוצים משהו
+              <br />
+              <span className="text-foil">דומה?</span>
+            </p>
+            <MagneticButton
+              href="#contact"
+              label="רוצים משהו דומה? דברו איתנו"
+              variant="gold"
+              className="w-fit border border-gold/40"
+            />
           </div>
         </div>
       </section>
 
-      {/* Lightbox Modal */}
       <LightboxModal
         images={GALLERY_IMAGES}
-        currentIndex={currentImageIndex}
+        currentIndex={lightboxIndex}
         isOpen={isLightboxOpen}
         onClose={closeLightbox}
         onPrev={goToPrev}

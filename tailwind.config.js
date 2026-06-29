@@ -4,40 +4,28 @@ export default {
   theme: {
     extend: {
       colors: {
+        ivory: '#F7F2EA',
+        pearl: '#EFE7DA',
+        sand: '#E4D8C5',
+        ink: '#1C1612',
+        noir: '#0B0908',
         gold: '#C9A96E',
-        cream: '#F5EDD6',
-        rose: '#E8A598',
-        dark: '#1A0A00',
-        'bg-light': '#FFFDF9',
-        'bg-cream': '#FAF6F0',
+        goldlight: '#E8C98B',
+        rose: '#D9A6A0',
+        muted: '#8A7E70',
       },
       fontFamily: {
-        heebo: ['Heebo', 'sans-serif'],
-        'frank-ruhl': ['"Frank Ruhl Libre"', 'serif'],
-      },
-      animation: {
-        'shimmer': 'shimmer 4s ease-in-out infinite',
-        'float': 'float 4s ease-in-out infinite',
-        'bounce-slow': 'bounce 2s infinite',
-      },
-      keyframes: {
-        shimmer: {
-          '0%': { backgroundPosition: '200% center' },
-          '100%': { backgroundPosition: '-200% center' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
-          '25%': { transform: 'translateY(-10px) rotate(2deg)' },
-          '50%': { transform: 'translateY(-20px) rotate(0deg)' },
-          '75%': { transform: 'translateY(-10px) rotate(-2deg)' },
-        },
+        display: ['"Frank Ruhl Libre"', 'serif'],
+        body: ['Assistant', 'sans-serif'],
       },
       transitionTimingFunction: {
-        'spring': 'cubic-bezier(0.23, 1, 0.32, 1)',
+        spring: 'cubic-bezier(0.32, 0.72, 0, 1)',
       },
-      boxShadow: {
-        'gold': '0 4px 20px rgba(201, 169, 110, 0.25)',
-        'gold-lg': '0 8px 40px rgba(201, 169, 110, 0.35)',
+      backgroundImage: {
+        foil: 'linear-gradient(105deg, #C9A96E, #E8C98B, #C9A96E)',
+      },
+      letterSpacing: {
+        label: '0.22em',
       },
     },
   },

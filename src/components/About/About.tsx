@@ -1,168 +1,116 @@
-// About - Personal story with large decorative quotation mark
-// Warm narrative about the business, Hebrew text
+// About — PEARL editorial zone.
+// Eyebrow + serif title, two large prose paragraphs revealed line-by-line,
+// signature, and three count-up statistics. Oversized serif glyph as a
+// low-opacity parallax background texture.
 
-import { useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import {
+  useSplitReveal,
+  useCountUp,
+  useParallax,
+} from '../../hooks/useScrollAnimation'
+import { GoldText } from '../shared/GoldText'
 
-gsap.registerPlugin(ScrollTrigger)
+interface Stat {
+  /** Numeric target for the count-up tween. */
+  value: number
+  /** Suffix rendered as a sibling node (kept outside the counting span). */
+  suffix: string
+  /** Muted label beneath the figure. */
+  label: string
+}
+
+const STATS: readonly Stat[] = [
+  { value: 500, suffix: '+', label: 'אירועים מאושרים' },
+  { value: 5, suffix: '+', label: 'שנות ניסיון' },
+  { value: 100, suffix: '%', label: 'שביעות רצון' },
+] as const
+
+function StatItem({ value, suffix, label }: Stat) {
+  const numRef = useCountUp(value)
+
+  return (
+    <div className="flex flex-col">
+      <div dir="ltr" className="flex items-baseline justify-start gap-1 font-display font-bold leading-none text-ink">
+        <span
+          ref={numRef}
+          className="text-[clamp(4rem,9vw,7rem)] tabular-nums"
+        >
+          {value}
+        </span>
+        <GoldText
+          as="span"
+          className="text-[clamp(2.5rem,5vw,4rem)] font-display font-bold"
+        >
+          {suffix}
+        </GoldText>
+      </div>
+      <span className="label mt-3 text-muted">{label}</span>
+    </div>
+  )
+}
 
 export default function About() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const quoteRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!sectionRef.current) return
-
-    const ctx = gsap.context(() => {
-      // Large quote mark animation
-      gsap.fromTo(
-        quoteRef.current,
-        { scale: 0.5, opacity: 0, rotate: -10 },
-        {
-          scale: 1,
-          opacity: 1,
-          rotate: 0,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 70%',
-            toggleActions: 'play none none none',
-          },
-        }
-      )
-
-      // Content stagger
-      const contentElements = contentRef.current?.querySelectorAll('.animate-content')
-      if (contentElements) {
-        gsap.fromTo(
-          contentElements,
-          { y: 50, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.15,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: contentRef.current,
-              start: 'top 75%',
-              toggleActions: 'play none none none',
-            },
-          }
-        )
-      }
-
-      // Parallax on quote mark
-      gsap.to(quoteRef.current, {
-        y: -50,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 2,
-        },
-      })
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
+  const glyphRef = useParallax<HTMLSpanElement>(0.4)
+  const p1Ref = useSplitReveal<HTMLParagraphElement>({ type: 'lines' })
+  const p2Ref = useSplitReveal<HTMLParagraphElement>({ type: 'lines' })
 
   return (
     <section
-      ref={sectionRef}
       id="about"
-      className="py-24 md:py-36 px-6 md:px-10 bg-[#FAF6F0] relative overflow-hidden"
+      className="relative overflow-hidden bg-pearl px-6 py-28 text-ink md:px-10 md:py-40"
     >
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#C9A96E]/5 to-transparent" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#E8A598]/5 rounded-full blur-3xl" />
-      </div>
+      {/* Oversized serif glyph — low-opacity parallax texture */}
+      <span
+        ref={glyphRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-[6vw] top-[8%] select-none font-display font-black leading-none text-ink/[0.04]"
+        style={{ fontSize: 'clamp(22rem,42vw,46rem)' }}
+      >
+        B
+      </span>
 
-      <div className="container mx-auto relative z-10">
-        <div className="max-w-4xl mx-auto">
-          {/* Large decorative quote mark */}
-          <div
-            ref={quoteRef}
-            className="absolute -top-8 right-0 md:right-10 select-none pointer-events-none"
-            style={{ opacity: 0 }}
+      <div className="relative z-10 mx-auto max-w-6xl">
+        {/* Eyebrow */}
+        <p className="label text-muted">
+          <span className="label-index">02 /</span> הסיפור שלנו
+        </p>
+
+        {/* Title */}
+        <h2 className="mt-6 max-w-4xl font-display text-[clamp(2.2rem,5vw,4rem)] font-bold leading-[1.05] text-ink">
+          למה דווקא <GoldText as="span">BALLOONICE</GoldText>?
+        </h2>
+
+        {/* Editorial prose */}
+        <div className="mt-14 grid gap-10 md:mt-20 md:grid-cols-12">
+          <p
+            ref={p1Ref}
+            className="font-body text-[clamp(1.3rem,2.4vw,2rem)] font-light leading-[1.55] text-ink/85 md:col-span-7"
           >
-            <span className="font-frank-ruhl text-[200px] md:text-[300px] text-[#C9A96E]/10 leading-none">
-              "
-            </span>
-          </div>
+            התחלנו מתשוקה פשוטה: להפוך אירועים רגילים לחוויות שאנשים ידברו עליהם
+            חודשים אחרי. היום, אחרי יותר מ-500 אירועים, אנחנו יודעים בדיוק איך
+            לקחת את החזון שלכם ולהפוך אותו לתפאורה שתגרום לאורחים שלכם לשלוף את
+            הטלפון ולצלם.
+          </p>
 
-          {/* Content */}
-          <div ref={contentRef} className="relative z-10 pt-16 md:pt-24">
-            <h2
-              className="animate-content font-frank-ruhl text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A0A00] mb-10"
-              style={{ opacity: 0 }}
-            >
-              למה דווקא BALLOONICE?
-            </h2>
+          <p
+            ref={p2Ref}
+            className="font-body text-[clamp(1.15rem,2vw,1.6rem)] font-light leading-[1.6] text-ink/70 md:col-span-5 md:self-end"
+          >
+            אנחנו לא מוכרים בלונים. אנחנו מוכרים רגעים. את ההפתעה בעיניים של ילד,
+            את התמונות שיישארו לנצח, את התחושה שמישהו באמת דאג לכל פרט.
+          </p>
+        </div>
 
-            <div className="space-y-8">
-              <p
-                className="animate-content font-heebo text-xl md:text-2xl text-[#1A0A00]/80 leading-relaxed"
-                style={{ opacity: 0 }}
-              >
-                התחלנו מתשוקה פשוטה: להפוך אירועים רגילים לחוויות שאנשים ידברו עליהם חודשים אחרי.
-                היום, אחרי יותר מ-500 אירועים, אנחנו יודעים בדיוק איך לקחת את החזון שלכם ולהפוך אותו
-                לתפאורה שתגרום לאורחים שלכם לשלוף את הטלפון ולצלם.
-              </p>
+        {/* Signature */}
+        <p className="mt-12 font-display text-xl italic text-muted md:text-2xl">
+          — צוות BALLOONICE
+        </p>
 
-              <p
-                className="animate-content font-heebo text-xl md:text-2xl text-[#1A0A00]/80 leading-relaxed"
-                style={{ opacity: 0 }}
-              >
-                אנחנו לא מוכרים בלונים. אנחנו מוכרים רגעים. את ההפתעה בעיניים של ילד,
-                את התמונות שיישארו לנצח, את התחושה שמישהו באמת דאג לכל פרט.
-              </p>
-            </div>
-
-            {/* Signature */}
-            <p
-              className="animate-content mt-12 font-frank-ruhl text-2xl italic text-[#C9A96E]"
-              style={{ opacity: 0 }}
-            >
-              - צוות BALLOONICE
-            </p>
-
-            {/* Stats row */}
-            <div
-              className="animate-content mt-16 flex flex-wrap gap-12 md:gap-20"
-              style={{ opacity: 0 }}
-            >
-              <div className="text-center">
-                <span className="block text-5xl md:text-6xl font-frank-ruhl font-bold text-[#C9A96E]">
-                  500+
-                </span>
-                <span className="text-lg text-[#1A0A00]/60 font-heebo mt-2 block">
-                  אירועים מאושרים
-                </span>
-              </div>
-              <div className="text-center">
-                <span className="block text-5xl md:text-6xl font-frank-ruhl font-bold text-[#C9A96E]">
-                  5+
-                </span>
-                <span className="text-lg text-[#1A0A00]/60 font-heebo mt-2 block">
-                  שנות ניסיון
-                </span>
-              </div>
-              <div className="text-center">
-                <span className="block text-5xl md:text-6xl font-frank-ruhl font-bold text-[#C9A96E]">
-                  100%
-                </span>
-                <span className="text-lg text-[#1A0A00]/60 font-heebo mt-2 block">
-                  שביעות רצון
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* Stats */}
+        <div className="mt-20 grid grid-cols-1 gap-x-12 gap-y-12 border-t border-sand pt-14 sm:grid-cols-3 md:mt-28 md:gap-x-20">
+          {STATS.map((stat) => (
+            <StatItem key={stat.label} {...stat} />
+          ))}
         </div>
       </div>
     </section>

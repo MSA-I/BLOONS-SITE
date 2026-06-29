@@ -1,197 +1,245 @@
-// Navbar - Luxury boutique sticky navigation
-// RTL layout, prominent logo, clean Hebrew links
+// Navbar — BALLOONICE luxury floating navigation.
+// Detached glass pill, transparent over the noir hero, gains a subtle
+// ivory tint + backdrop-blur once scrolled past the hero. RTL: logo sits
+// on the RIGHT, links read right-to-left. Magnetic phone CTA. On mobile a
+// hamburger morphs into an X and opens a full-screen ivory overlay with
+// staggered slide-up links. Smooth anchor scrolling via scrollIntoView.
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
-
-const navLinks = [
-  { href: '#services', label: 'השירותים' },
-  { href: '#about', label: 'הסיפור שלנו' },
-  { href: '#testimonials', label: 'גלריה' },
-  { href: '#contact', label: 'צור קשר' },
-]
+import { prefersReducedMotion } from '../../hooks/useScrollAnimation'
+import { scrollToAnchor } from '../../lib/smoothScroll'
+import { NAV_LINKS } from '../../lib/navLinks'
+import MagneticButton from './MagneticButton'
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const navRef = useRef<HTMLElement>(null)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
+  const overlayRef = useRef<HTMLDivElement>(null)
+  const overlayItemsRef = useRef<HTMLUListElement>(null)
+
+  // Toggle tint/blur once past the hero fold.
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+    const onScroll = () => setScrolled(window.scrollY > 80)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Lock body scroll while the full-screen menu is open.
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [menuOpen])
 
-  // GSAP entrance animation
+  // Animate the mobile overlay in/out (staggered slide-up links).
   useEffect(() => {
-    if (!navRef.current) return
+    const overlay = overlayRef.current
+    const list = overlayItemsRef.current
+    if (!overlay || !list) return
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        navRef.current,
-        { y: -100, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1,
-          ease: 'power3.out',
-          delay: 0.3,
-        }
-      )
-    }, navRef)
+    const items = list.querySelectorAll<HTMLElement>('[data-overlay-item]')
 
-    return () => ctx.revert()
-  }, [])
+    if (prefersReducedMotion()) {
+      // Must toggle display too — the overlay ships with Tailwind `hidden`
+      // (display:none); autoAlpha only sets opacity/visibility, so without this
+      // the reduced-motion menu never appears while body scroll is locked.
+      gsap.set(overlay, {
+        display: menuOpen ? 'flex' : 'none',
+        autoAlpha: menuOpen ? 1 : 0,
+      })
+      gsap.set(items, { autoAlpha: 1, y: 0 })
+      return
+    }
 
-  // Mobile menu animation
-  useEffect(() => {
-    if (!mobileMenuRef.current) return
+    if (menuOpen) {
+      const tl = gsap.timeline()
+      tl.set(overlay, { display: 'flex' })
+        .to(overlay, { autoAlpha: 1, duration: 0.4, ease: 'power3.out' })
+        .fromTo(
+          items,
+          { yPercent: 120, opacity: 0 },
+          {
+            yPercent: 0,
+            opacity: 1,
+            duration: 0.55,
+            stagger: 0.07,
+            ease: 'power3.out',
+            force3D: true,
+          },
+          '-=0.15'
+        )
+      return () => {
+        tl.kill()
+      }
+    }
 
-    if (isMobileMenuOpen) {
-      gsap.fromTo(
-        mobileMenuRef.current,
-        { height: 0, opacity: 0 },
-        {
-          height: 'auto',
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.out',
-        }
-      )
-      gsap.fromTo(
-        mobileMenuRef.current.querySelectorAll('li'),
-        { x: 30, opacity: 0 },
-        {
-          x: 0,
-          opacity: 1,
-          duration: 0.3,
-          stagger: 0.08,
-          ease: 'power2.out',
-          delay: 0.1,
-        }
-      )
-    } else {
-      gsap.to(mobileMenuRef.current, {
-        height: 0,
-        opacity: 0,
+    const tl = gsap.timeline()
+    tl.to(items, {
+      yPercent: 60,
+      opacity: 0,
+      duration: 0.25,
+      stagger: 0.03,
+      ease: 'power2.in',
+    }).to(
+      overlay,
+      {
+        autoAlpha: 0,
         duration: 0.3,
         ease: 'power2.in',
-      })
+        onComplete: () => gsap.set(overlay, { display: 'none' }),
+      },
+      '-=0.1'
+    )
+    return () => {
+      tl.kill()
     }
-  }, [isMobileMenuOpen])
+  }, [menuOpen])
 
-  const handleLinkClick = () => {
-    setIsMobileMenuOpen(false)
-  }
+  // Scroll to an in-page anchor through the shared Lenis instance (falls back
+  // to a native instant jump under reduced motion). Close the mobile menu first.
+  const handleNavClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      if (!href.startsWith('#')) return
+      e.preventDefault()
+      setMenuOpen(false)
+      // Give the mobile overlay time to close before scrolling.
+      const delay = menuOpen ? 350 : 0
+      window.setTimeout(() => scrollToAnchor(href), delay)
+    },
+    [menuOpen]
+  )
 
   return (
-    <nav
-      ref={navRef}
-      className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? 'bg-[#F5EDD6]/95 backdrop-blur-md shadow-lg shadow-[#1A0A00]/5'
-          : 'bg-transparent'
-      }`}
-      style={{ opacity: 0 }}
-    >
-      <div className="container mx-auto px-6 md:px-10">
-        <div className="flex items-center justify-between h-24">
-          {/* Logo */}
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50">
+      <div className="mx-auto mt-6 w-[min(100%-2rem,72rem)] px-0">
+        <nav
+          className={[
+            'pointer-events-auto flex items-center justify-between gap-4',
+            'rounded-full px-5 py-3 md:px-7 md:py-3.5',
+            'transition-[background-color,backdrop-filter,border-color,box-shadow] duration-500',
+            'border',
+            scrolled
+              ? 'border-sand/60 bg-ivory/80 shadow-[0_10px_40px_-18px_rgba(28,22,18,0.4)] backdrop-blur-xl'
+              : 'border-transparent bg-transparent',
+          ].join(' ')}
+          style={{ transitionTimingFunction: 'cubic-bezier(0.32,0.72,0,1)' }}
+        >
+          {/* Logo — RIGHT in RTL (first DOM child) */}
           <a
             href="#hero"
-            className="flex items-center gap-4 group"
-            onClick={handleLinkClick}
+            data-cursor
+            onClick={(e) => handleNavClick(e, '#hero')}
+            className="group flex shrink-0 items-center"
+            aria-label="BALLOONICE"
           >
             <img
               src="/assets/logo.png"
               alt="BALLOONICE"
-              className="h-14 md:h-16 w-auto transition-transform duration-500 group-hover:scale-105"
+              className="h-10 w-auto transition-transform duration-500 group-hover:scale-105 md:h-12"
+              style={{ transitionTimingFunction: 'cubic-bezier(0.32,0.72,0,1)' }}
             />
           </a>
 
-          {/* Desktop Navigation */}
-          <ul className="hidden md:flex items-center gap-10 font-heebo">
-            {navLinks.map((link) => (
+          {/* Desktop links */}
+          <ul className="hidden items-center gap-9 font-body md:flex">
+            {NAV_LINKS.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className="text-[#1A0A00] text-lg font-medium hover:text-[#C9A96E] transition-colors duration-300 relative group"
+                  data-cursor
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className={[
+                    'group relative text-[0.95rem] font-medium tracking-wide transition-colors duration-300',
+                    scrolled ? 'text-ink hover:text-gold' : 'text-ivory hover:text-goldlight',
+                  ].join(' ')}
                 >
                   {link.label}
-                  <span className="absolute -bottom-1 right-0 w-0 h-0.5 bg-[#C9A96E] transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute -bottom-1.5 right-0 h-px w-0 bg-gold transition-all duration-500 ease-spring group-hover:w-full" />
                 </a>
               </li>
             ))}
-            <li>
-              <a
-                href="tel:0504127772"
-                className="bg-[#C9A96E] hover:bg-[#B89A5F] text-[#1A0A00] font-bold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-[#C9A96E]/30 hover:-translate-y-0.5"
-              >
-                התקשרו עכשיו
-              </a>
-            </li>
           </ul>
 
-          {/* Mobile Menu Button */}
+          {/* Desktop CTA (magnetic pill) */}
+          <MagneticButton
+            href="tel:0504127772"
+            label="התקשרו עכשיו"
+            variant="gold"
+            size="sm"
+            className="hidden md:inline-flex"
+          />
+
+          {/* Mobile hamburger / X */}
           <button
-            className="md:hidden w-12 h-12 flex flex-col items-center justify-center gap-1.5"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="תפריט"
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? 'סגירת תפריט' : 'פתיחת תפריט'}
+            aria-expanded={menuOpen}
+            className="relative flex h-10 w-10 items-center justify-center md:hidden"
           >
-            <span
-              className={`w-7 h-0.5 bg-[#1A0A00] transition-all duration-300 ${
-                isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-              }`}
-            />
-            <span
-              className={`w-7 h-0.5 bg-[#1A0A00] transition-all duration-300 ${
-                isMobileMenuOpen ? 'opacity-0' : ''
-              }`}
-            />
-            <span
-              className={`w-7 h-0.5 bg-[#1A0A00] transition-all duration-300 ${
-                isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-              }`}
-            />
+            <span className="sr-only">{menuOpen ? 'סגירת תפריט' : 'תפריט'}</span>
+            <span className="relative block h-4 w-7">
+              <span
+                className={[
+                  'absolute left-0 block h-0.5 w-7 rounded-full transition-all duration-300 ease-spring',
+                  menuOpen ? 'top-1/2 rotate-45' : 'top-0',
+                  menuOpen || scrolled ? 'bg-ink' : 'bg-ivory',
+                ].join(' ')}
+              />
+              <span
+                className={[
+                  'absolute bottom-0 left-0 block h-0.5 w-7 rounded-full transition-all duration-300 ease-spring',
+                  menuOpen ? '-rotate-45 bottom-auto top-1/2' : '',
+                  menuOpen || scrolled ? 'bg-ink' : 'bg-ivory',
+                ].join(' ')}
+              />
+            </span>
           </button>
-        </div>
+        </nav>
+      </div>
 
-        {/* Mobile Menu */}
-        <div
-          ref={mobileMenuRef}
-          className="md:hidden overflow-hidden"
-          style={{ height: 0, opacity: 0 }}
-        >
-          <ul className="py-6 space-y-5 font-heebo border-t border-[#C9A96E]/20">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  onClick={handleLinkClick}
-                  className="block py-2 text-xl text-[#1A0A00] hover:text-[#C9A96E] transition-colors duration-300"
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-            <li>
+      {/* Full-screen mobile overlay */}
+      <div
+        ref={overlayRef}
+        className="pointer-events-auto fixed inset-0 z-40 hidden flex-col bg-ivory px-8 pb-12 pt-28 md:hidden"
+        style={{ visibility: 'hidden' }}
+      >
+        <ul ref={overlayItemsRef} className="flex flex-col gap-2 font-display">
+          {NAV_LINKS.map((link, i) => (
+            <li key={link.href} className="overflow-hidden">
               <a
-                href="tel:0504127772"
-                onClick={handleLinkClick}
-                className="inline-block mt-4 bg-[#C9A96E] text-[#1A0A00] font-bold py-3 px-8 rounded-full"
+                href={link.href}
+                data-cursor
+                data-overlay-item
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="flex items-baseline gap-4 py-3 text-4xl font-bold text-ink transition-colors duration-300 active:text-gold"
               >
-                התקשרו עכשיו
+                <span className="label label-index text-gold">
+                  0{i + 1} /
+                </span>
+                {link.label}
               </a>
             </li>
-          </ul>
-        </div>
+          ))}
+        </ul>
+
+        <a
+          href="tel:0504127772"
+          data-cursor
+          data-overlay-item
+          onClick={() => setMenuOpen(false)}
+          className="mt-auto inline-flex items-center justify-center gap-3 rounded-full bg-gold py-4 font-body text-lg font-semibold text-ink active:scale-[0.98]"
+        >
+          <span>התקשרו עכשיו</span>
+          <span className="dir-ltr text-base font-medium opacity-70">
+            050-412-7772
+          </span>
+        </a>
       </div>
-    </nav>
+    </header>
   )
 }

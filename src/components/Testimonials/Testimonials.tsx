@@ -1,159 +1,142 @@
-// Testimonials - 3 customer testimonials with organic card feel
-// Slight rotation, gold quotation marks, names and event types
+// Testimonials — BALLOONICE luxury redesign (ZONE: IVORY light)
+// Editorial layout: large serif quotes on the ivory ground, ultra-light gold
+// stars, author + event in muted small caps. No glass cards / rotation —
+// hierarchy lives in type scale, gold hairlines and heavy negative space.
+// Each testimonial reveals distinctly: a gold accent line clip-reveals while
+// the serif quote fades up via SplitText.
 
-import { useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useSplitReveal, useClipReveal } from '../../hooks/useScrollAnimation'
 
-gsap.registerPlugin(ScrollTrigger)
+interface Testimonial {
+  quote: string
+  name: string
+  event: string
+}
 
-const testimonials = [
+const testimonials: Testimonial[] = [
   {
-    quote: 'הזמנו קשת בלונים לחתונה ולא היה לנו מושג שזה יהפוך לאטרקציה המרכזית של האירוע. כל האורחים התייצבו לתמונות מולה. פשוט הייתה שיחת הערב.',
+    quote:
+      'הזמנו קשת בלונים לחתונה ולא היה לנו מושג שזה יהפוך לאטרקציה המרכזית של האירוע. כל האורחים התייצבו לתמונות מולה. פשוט הייתה שיחת הערב.',
     name: 'רונית ואיתי כהן',
     event: 'חתונה בגן אירועים',
   },
   {
-    quote: 'הבת שלי רצתה יום הולדת של חדי קרן. מה שהם עשו עם הבלונים - היא פשוט קפאה במקום כשנכנסה. הרגע הזה שווה כל שקל.',
+    quote:
+      'הבת שלי רצתה יום הולדת של חדי קרן. מה שהם עשו עם הבלונים - היא פשוט קפאה במקום כשנכנסה. הרגע הזה שווה כל שקל.',
     name: 'מיכל לוי',
     event: 'יום הולדת 6',
   },
   {
-    quote: 'אירוע השקה של מוצר חדש לחברה. הבלונים בצבעי הלוגו שלנו יצרו רקע מדהים לכל התמונות. הלקוחות שלנו היו המומים מהרמה.',
+    quote:
+      'אירוע השקה של מוצר חדש לחברה. הבלונים בצבעי הלוגו שלנו יצרו רקע מדהים לכל התמונות. הלקוחות שלנו היו המומים מהרמה.',
     name: 'דני אברהמי',
     event: 'אירוע השקה עסקי',
   },
 ]
 
-const rotations = [-2, 1, -1]
+// Ultra-light outline star — gold stroke, no fill (delicate, anti-slop).
+function Star() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="text-gold"
+    >
+      <path d="M12 2.5l2.92 5.92 6.53.95-4.72 4.6 1.11 6.5L12 17.9l-5.84 3.07 1.11-6.5-4.72-4.6 6.53-.95L12 2.5z" />
+    </svg>
+  )
+}
 
-export default function Testimonials() {
-  const sectionRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLDivElement>(null)
-  const cardsRef = useRef<HTMLDivElement>(null)
+function Stars() {
+  return (
+    <div className="flex gap-1.5" aria-label="חמישה כוכבים מתוך חמישה">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star key={i} />
+      ))}
+    </div>
+  )
+}
 
-  useEffect(() => {
-    if (!sectionRef.current) return
-
-    const ctx = gsap.context(() => {
-      // Title animation
-      gsap.fromTo(
-        titleRef.current,
-        { y: 50, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.9,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: titleRef.current,
-            start: 'top 85%',
-            toggleActions: 'play none none none',
-          },
-        }
-      )
-
-      // Cards fade in with blur and rotation
-      const cards = cardsRef.current?.querySelectorAll('.testimonial-card')
-      if (cards) {
-        gsap.fromTo(
-          cards,
-          {
-            y: 80,
-            opacity: 0,
-            filter: 'blur(10px)',
-          },
-          {
-            y: 0,
-            opacity: 1,
-            filter: 'blur(0px)',
-            duration: 0.9,
-            stagger: 0.15,
-            ease: 'power3.out',
-            scrollTrigger: {
-              trigger: cardsRef.current,
-              start: 'top 75%',
-              toggleActions: 'play none none none',
-            },
-          }
-        )
-      }
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
+function TestimonialItem({ item, index }: { item: Testimonial; index: number }) {
+  // Quote: serif fade-up reveal (lines). Accent line: clip-reveal.
+  const quoteRef = useSplitReveal<HTMLQuoteElement>({
+    type: 'lines',
+    start: 'top 85%',
+  })
+  const lineRef = useClipReveal<HTMLDivElement>({ start: 'top 88%' })
 
   return (
-    <section
-      ref={sectionRef}
-      id="testimonials"
-      className="py-24 md:py-32 px-6 md:px-10 bg-[#FFFDF9] relative overflow-hidden"
-    >
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-[#C9A96E]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#E8A598]/5 rounded-full blur-3xl" />
-      </div>
+    <article className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start">
+      {/* Index + stars rail */}
+      <header className="md:col-span-3 flex flex-row md:flex-col items-baseline md:items-start justify-between md:justify-start gap-4">
+        <span className="label text-muted">
+          <span className="label-index">
+            {String(index + 1).padStart(2, '0')} /
+          </span>{' '}
+          המלצה
+        </span>
+        <Stars />
+      </header>
 
-      <div className="container mx-auto relative z-10">
+      {/* Quote + attribution */}
+      <div className="md:col-span-9">
+        {/* Gold accent line — clip reveal */}
+        <div
+          ref={lineRef}
+          className="clip-reveal h-px w-16 bg-foil mb-8"
+          aria-hidden="true"
+        />
+
+        <blockquote
+          ref={quoteRef}
+          className="font-display font-light text-ink leading-[1.35] text-[clamp(1.5rem,2.6vw,2.4rem)]"
+        >
+          {item.quote}
+        </blockquote>
+
+        <footer className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <cite className="not-italic font-body font-medium text-ink tracking-wide">
+            {item.name}
+          </cite>
+          <span className="h-3 w-px bg-sand" aria-hidden="true" />
+          <span className="label text-muted">{item.event}</span>
+        </footer>
+      </div>
+    </article>
+  )
+}
+
+export default function Testimonials() {
+  const titleRef = useSplitReveal<HTMLHeadingElement>({ type: 'words' })
+
+  return (
+    <section id="testimonials" className="bg-ivory text-ink py-20 md:py-28 px-6 md:px-10 overflow-hidden">
+      <div className="max-w-6xl mx-auto">
         {/* Section header */}
-        <div ref={titleRef} className="text-center mb-20" style={{ opacity: 0 }}>
-          <h2 className="font-frank-ruhl text-4xl md:text-5xl lg:text-6xl font-bold text-[#1A0A00] mb-4">
+        <header className="mb-16 md:mb-24">
+          <span className="label text-gold block mb-5">
+            <span className="label-index">03 /</span> המלצות
+          </span>
+          <h2
+            ref={titleRef}
+            className="font-display font-bold text-ink leading-[0.95] text-[clamp(2.2rem,5vw,4rem)]"
+          >
             מה אומרים עלינו
           </h2>
-        </div>
+        </header>
 
-        {/* Testimonials grid */}
-        <div
-          ref={cardsRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10"
-        >
-          {testimonials.map((testimonial, index) => (
-            <div
-              key={index}
-              className="testimonial-card relative bg-[#F5EDD6]/70 rounded-3xl p-8 md:p-10 transition-all duration-500 hover:shadow-xl hover:shadow-[#C9A96E]/10 hover:-translate-y-2"
-              style={{
-                opacity: 0,
-                transform: `rotate(${rotations[index]}deg)`,
-              }}
-            >
-              {/* Large gold decorative quote mark */}
-              <div className="absolute top-6 right-8 select-none pointer-events-none">
-                <span className="font-frank-ruhl text-8xl text-[#C9A96E]/30 leading-none">
-                  "
-                </span>
-              </div>
-
-              {/* Quote */}
-              <blockquote className="relative z-10 pt-8">
-                <p className="font-heebo text-lg md:text-xl text-[#1A0A00]/80 leading-relaxed mb-8">
-                  "{testimonial.quote}"
-                </p>
-              </blockquote>
-
-              {/* Author info */}
-              <div className="border-t border-[#C9A96E]/20 pt-6">
-                <p className="font-heebo font-bold text-lg text-[#1A0A00]">
-                  {testimonial.name}
-                </p>
-                <p className="font-heebo text-[#C9A96E] mt-1">
-                  {testimonial.event}
-                </p>
-              </div>
-
-              {/* Star rating */}
-              <div className="flex gap-1.5 mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className="w-5 h-5 text-[#C9A96E]"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
+        {/* Testimonials — stacked editorial rows with gold hairlines */}
+        <div className="divide-y divide-sand">
+          {testimonials.map((item, index) => (
+            <div key={index} className="py-12 md:py-16 first:pt-0">
+              <TestimonialItem item={item} index={index} />
             </div>
           ))}
         </div>
